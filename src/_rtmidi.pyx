@@ -74,6 +74,10 @@ used to specify the low-level MIDI backend API to use when creating a
     Windows MultiMedia
 ``API_RTMIDI_DUMMY``
     RtMidi Dummy API (used when no suitable API was found)
+``API_WEB_MIDI_API``
+    W3C Web MIDI API
+``API_WINDOWS_UWP``
+    Windows UWP
 
 
 Error types
@@ -113,7 +117,8 @@ from libcpp.vector cimport vector
 
 __all__ = (
     'API_UNSPECIFIED', 'API_MACOSX_CORE', 'API_LINUX_ALSA', 'API_UNIX_JACK',
-    'API_WINDOWS_MM', 'API_RTMIDI_DUMMY', 'ERRORTYPE_DEBUG_WARNING',
+    'API_WINDOWS_MM', 'API_RTMIDI_DUMMY', 'API_WEB_MIDI_API',
+    'API_WINDOWS_UWP', 'ERRORTYPE_DEBUG_WARNING',
     'ERRORTYPE_DRIVER_ERROR', 'ERRORTYPE_INVALID_DEVICE',
     'ERRORTYPE_INVALID_PARAMETER', 'ERRORTYPE_INVALID_USE',
     'ERRORTYPE_MEMORY_ERROR', 'ERRORTYPE_NO_DEVICES_FOUND',
@@ -149,6 +154,8 @@ cdef extern from "RtMidi.h":
         UNIX_JACK    "RtMidi::UNIX_JACK"
         WINDOWS_MM   "RtMidi::WINDOWS_MM"
         RTMIDI_DUMMY "RtMidi::RTMIDI_DUMMY"
+        WEB_MIDI_API "RtMidi::WEB_MIDI_API"
+        WINDOWS_UWP  "RtMidi::WINDOWS_UWP"
 
     cdef enum ErrorType "RtMidiError::Type":
         ERR_WARNING           "RtMidiError::WARNING"
@@ -245,6 +252,8 @@ API_LINUX_ALSA = LINUX_ALSA
 API_UNIX_JACK = UNIX_JACK
 API_WINDOWS_MM = WINDOWS_MM
 API_RTMIDI_DUMMY = RTMIDI_DUMMY
+API_WEB_MIDI_API = WEB_MIDI_API
+API_WINDOWS_UWP = WINDOWS_UWP
 
 # export error values to Python
 
@@ -641,6 +650,9 @@ cdef class MidiBase:
         if self.get_current_api() == API_WINDOWS_MM:
             raise NotImplementedError("Virtual ports are not supported "
                                       "by the Windows MultiMedia API.")
+        if self.get_current_api() == API_WINDOWS_UWP:
+            raise NotImplementedError("Virtual ports are not supported "
+                                      "by the Windows UWP API.")
 
         inout = self._check_port()
         self.baseptr().openVirtualPort(_to_bytes(("RtMidi virtual %s" % inout)
@@ -682,7 +694,7 @@ cdef class MidiBase:
             client name.
 
         """
-        if self.get_current_api() in (API_MACOSX_CORE, API_UNIX_JACK, API_WINDOWS_MM):
+        if self.get_current_api() in (API_MACOSX_CORE, API_UNIX_JACK, API_WINDOWS_MM, API_WINDOWS_UWP):
             raise NotImplementedError(
                 "API backend does not support changing the client name.")
 
@@ -708,7 +720,7 @@ cdef class MidiBase:
             port name.
 
         """
-        if self.get_current_api() in (API_MACOSX_CORE, API_WINDOWS_MM):
+        if self.get_current_api() in (API_MACOSX_CORE, API_WINDOWS_MM, API_WINDOWS_UWP):
             raise UnsupportedOperationError(
                 "API backend does not support changing the port name.")
 
