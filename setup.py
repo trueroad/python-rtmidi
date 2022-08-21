@@ -120,7 +120,7 @@ include_dirs = [join(SRC_DIR, "rtmidi")]
 libraries = []
 extra_link_args = []
 extra_compile_args = []
-alsa = coremidi = jack = winmm = True
+alsa = coremidi = jack = winmm = winuwp = True
 
 if '--no-alsa' in sys.argv:
     alsa = False
@@ -137,6 +137,10 @@ if '--no-jack' in sys.argv:
 if '--no-winmm' in sys.argv:
     winmm = False
     sys.argv.remove('--no-winmm')
+
+if '--no-winuwp' in sys.argv:
+    winwup = False
+    sys.argv.remove('--no-winwup')
 
 if '--no-suppress-warnings' not in sys.argv:
     define_macros.append(('__RTMIDI_SILENCE_WARNINGS__', None))
@@ -174,6 +178,13 @@ elif sys.platform.startswith('win'):
     if winmm:
         define_macros.append(('__WINDOWS_MM__', None))
         libraries.append("winmm")
+    if winuwp:
+        extra_compile_args.extend(['/permissive',
+                                   '/std:c++17',
+                                   '/await',
+                                   '/bigobj'])
+        define_macros.append(('__WINDOWS_UWP__', None))
+        libraries.append("windowsapp")
 
 else:
     print("WARNING: This operating system (%s) is not supported by RtMidi.\n"
